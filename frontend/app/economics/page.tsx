@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import dynamic from "next/dynamic";
 import TickerBar from "@/components/economics/TickerBar";
 import SignalBar from "@/components/economics/SignalBar";
@@ -85,6 +86,17 @@ export default function EconomicsPage() {
           <p className="text-[9px] text-gray-600 pl-6">
             Real-time global monitoring · AI-powered insights · World Bank &amp; live market data
           </p>
+          <div className="flex flex-wrap items-center gap-2 mt-2 pl-6">
+            <Link href="/finance" className="px-3 py-1 bg-white/[0.04] hover:bg-emerald-500/15 border border-white/8 hover:border-emerald-500/40 rounded-lg text-[9px] font-bold text-gray-500 hover:text-emerald-400 transition-all uppercase tracking-widest">
+              Finance
+            </Link>
+            <Link href="/corporate" className="px-3 py-1 bg-white/[0.04] hover:bg-violet-500/15 border border-white/8 hover:border-violet-500/40 rounded-lg text-[9px] font-bold text-gray-500 hover:text-violet-400 transition-all uppercase tracking-widest">
+              Corporate
+            </Link>
+            <Link href="/about" className="px-3 py-1 bg-white/[0.04] hover:bg-[#00d4ff]/15 border border-white/8 hover:border-[#00d4ff]/40 rounded-lg text-[9px] font-bold text-gray-500 hover:text-[#00d4ff] transition-all uppercase tracking-widest">
+              About
+            </Link>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
