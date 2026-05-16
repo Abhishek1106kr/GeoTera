@@ -3,7 +3,20 @@ import { useGeoTera } from "@/lib/GeoTeraContext";
 import { useLocation } from "@/lib/useLocation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, MapPin, Clock, TrendingUp, Globe, Newspaper, Cloud, Users } from "lucide-react";
+import dynamic from "next/dynamic";
+import { ArrowRight, MapPin, Clock, TrendingUp, Globe, Newspaper, Cloud, Users, Activity } from "lucide-react";
+
+const DeckGlobe = dynamic(() => import("@/components/DeckGlobe"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-16 h-16 rounded-full border-2 border-cyan-500/30 border-t-cyan-400 animate-spin mx-auto mb-4" />
+        <p className="text-gray-600 text-sm">Loading globe...</p>
+      </div>
+    </div>
+  ),
+});
 
 function useLocalTime(timezone?: string) {
   const [time, setTime] = useState("");
@@ -164,6 +177,58 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      {/* ── LIVE EARTH GLOBE ── */}
+      <section className="py-20 px-6">
+        <div className="max-w-screen-xl mx-auto">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full px-4 py-1.5 mb-5">
+              <Activity size={12} className="text-cyan-400 animate-pulse" />
+              <span className="text-xs font-bold text-cyan-400 uppercase tracking-widest">Live Earth</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black text-white mb-3">The World, Right Now</h2>
+            <p className="text-gray-600 max-w-lg mx-auto">
+              Earthquake activity and tracked cities plotted in real-time. Drag to explore. Data arcs show active news bureau connections.
+            </p>
+          </div>
+
+          {/* Globe card */}
+          <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#04080f]"
+               style={{ boxShadow: "0 0 80px rgba(6,182,212,0.08), 0 0 0 1px rgba(255,255,255,0.05)" }}>
+            {/* Top glow */}
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent" />
+            {/* Ambient corner glows */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-blue-500/5 blur-3xl pointer-events-none" />
+
+            {/* Globe canvas */}
+            <div className="relative" style={{ height: "600px" }}>
+              <DeckGlobe
+                earthquakes={data?.climate?.earthquakes ?? []}
+                weather={data?.climate?.weather ?? []}
+              />
+            </div>
+
+            {/* Bottom legend bar */}
+            <div className="relative border-t border-white/5 bg-black/30 backdrop-blur px-8 py-4 flex flex-wrap items-center gap-6">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_2px_rgba(6,182,212,0.5)]" />
+                <span className="text-xs text-gray-500">Tracked Cities ({data?.climate?.weather?.length ?? 0})</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_2px_rgba(239,68,68,0.5)]" />
+                <span className="text-xs text-gray-500">
+                  Earthquakes ({data?.climate?.earthquakes?.length ?? 0})
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-8 h-px bg-gradient-to-r from-cyan-400/60 to-violet-400/60" />
+                <span className="text-xs text-gray-500">News Bureau Arcs</span>
+              </div>
+              <span className="ml-auto text-xs text-gray-700 hidden sm:block">Drag to rotate · Hover for details</span>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ── EXPLORE CARDS ── */}
       <section className="py-28 px-6">
