@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useGeoTera } from "@/lib/GeoTeraContext";
 import PageHero from "@/components/PageHero";
 import { TrendingUp, TrendingDown, DollarSign } from "lucide-react";
@@ -56,6 +57,19 @@ export default function EconomicsPage() {
       />
 
       <div className="max-w-screen-xl mx-auto px-6 pb-20 space-y-16">
+        {/* Quick Navigation Buttons */}
+        <div className="flex flex-wrap items-center gap-4 -mb-8">
+          <Link href="/finance" className="px-6 py-2.5 bg-white/[0.05] hover:bg-emerald-500/20 border border-white/10 hover:border-emerald-500/50 rounded-xl text-sm font-medium text-gray-300 hover:text-emerald-400 transition-all">
+            Finance
+          </Link>
+          <Link href="/corporate" className="px-6 py-2.5 bg-white/[0.05] hover:bg-violet-500/20 border border-white/10 hover:border-violet-500/50 rounded-xl text-sm font-medium text-gray-300 hover:text-violet-400 transition-all">
+            Corporate
+          </Link>
+          <Link href="/about" className="px-6 py-2.5 bg-white/[0.05] hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-500/50 rounded-xl text-sm font-medium text-gray-300 hover:text-cyan-400 transition-all">
+            About
+          </Link>
+        </div>
+
         <section>
           <SectionTitle label="Stock Indices" color="from-emerald-400 to-teal-600" />
           {eco?.indices?.length

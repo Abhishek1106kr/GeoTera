@@ -3,6 +3,8 @@ import json
 import logging
 from contextlib import asynccontextmanager
 from typing import Set
+from pydantic import BaseModel
+import asyncio
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -13,6 +15,7 @@ from scrapers.news import fetch_news
 from scrapers.economy import fetch_economy
 from scrapers.climate import fetch_climate
 from scrapers.population import fetch_population
+from scrapers.about import send_subscription_email
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("geoterra")
@@ -91,6 +94,21 @@ async def get_data():
 async def trigger_refresh():
     asyncio.create_task(scrape_all())
     return {"status": "refresh triggered"}
+
+class SubscribeRequest(BaseModel):
+    email: str
+
+@app.post("/api/subscribe")
+async def subscribe_user(req: SubscribeRequest):
+    try:
+        loop = asyncio.get_event_loop()
+        # run blocking smtplib call in threadpool
+        await loop.run_in_executor(None, send_subscription_email, req.email)
+        return {"status": "success", "message": "Subscription confirmed"}
+    except Exception as e:
+        logger.error("Subscription error: %s", e)
+        # We can return an error or fake success if the SMTP isn't configured
+        return {"status": "error", "message": str(e)}
 
 
 @app.websocket("/ws")
