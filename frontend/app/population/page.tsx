@@ -1,7 +1,10 @@
 "use client";
+import dynamic from "next/dynamic";
 import { useGeoTera } from "@/lib/GeoTeraContext";
 import PageHero from "@/components/PageHero";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+
+const PopulationMap = dynamic(() => import("@/components/maps/PopulationMap"), { ssr: false });
 
 function fmtPop(n: number): string {
   if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(2)}B`;
@@ -64,6 +67,17 @@ export default function PopulationPage() {
             <p className="text-gray-600 text-sm mt-3">Source: REST Countries API</p>
           </div>
         )}
+
+        {/* Population Bubble Map */}
+        <section>
+          <h2 className="text-2xl font-black text-white mb-6 flex items-center gap-3">
+            <span className="w-1.5 h-7 rounded-full bg-gradient-to-b from-blue-400 to-violet-600" />
+            World Population Map
+          </h2>
+          <div className="rounded-2xl overflow-hidden border border-white/10" style={{height:"400px"}}>
+            <PopulationMap population={pop} />
+          </div>
+        </section>
 
         {/* Region Breakdown */}
         {Object.keys(byRegion).length > 0 && (

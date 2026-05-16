@@ -5,6 +5,7 @@ _store: dict = {
     "economy": {},
     "climate": {},
     "population": {},
+    "worldbank": {},
     "last_updated": None,
 }
 

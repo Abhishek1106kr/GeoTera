@@ -1,8 +1,11 @@
 "use client";
+import dynamic from "next/dynamic";
 import { useState } from "react";
 import { useGeoTera } from "@/lib/GeoTeraContext";
 import PageHero from "@/components/PageHero";
 import { ExternalLink, Search } from "lucide-react";
+
+const NewsMap = dynamic(() => import("@/components/maps/NewsMap"), { ssr: false });
 
 const SOURCE_COLORS: Record<string, string> = {
   "BBC World": "bg-red-700/80 text-red-200",
@@ -64,6 +67,11 @@ export default function NewsPage() {
               className="w-full bg-white/[0.04] border border-white/10 focus:border-blue-500/40 rounded-xl pl-9 pr-4 py-2.5 text-sm text-gray-300 placeholder-gray-700 outline-none transition-colors"
             />
           </div>
+        </div>
+
+        {/* News Bureau Map */}
+        <div className="mb-10 rounded-2xl overflow-hidden border border-white/10" style={{height:"300px"}}>
+          <NewsMap news={data?.news ?? []} />
         </div>
 
         {/* Grid */}

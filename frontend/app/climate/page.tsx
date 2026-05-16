@@ -1,6 +1,9 @@
 "use client";
+import dynamic from "next/dynamic";
 import { useGeoTera } from "@/lib/GeoTeraContext";
 import PageHero from "@/components/PageHero";
+
+const ClimateMap = dynamic(() => import("@/components/maps/ClimateMap"), { ssr: false });
 
 const WMO: Record<number, { label: string; icon: string }> = {
   0: { label: "Clear sky", icon: "☀️" },
@@ -38,7 +41,7 @@ function magBg(mag: number | null) {
 
 export default function ClimatePage() {
   const { data } = useGeoTera();
-  const climate = data?.climate;
+  const climate = data?.climate ?? null;
 
   return (
     <div className="min-h-screen">
@@ -48,6 +51,13 @@ export default function ClimatePage() {
         subtitle="Live weather across major cities, significant earthquake activity, and atmospheric CO₂ measurements from Mauna Loa."
         gradient="from-orange-400 to-red-500"
       />
+
+      {/* Live Map */}
+      <div className="max-w-screen-xl mx-auto px-6 -mt-4 mb-8">
+        <div className="bg-white/[0.03] border border-white/10 rounded-2xl overflow-hidden" style={{height: "380px"}}>
+          <ClimateMap climate={climate} />
+        </div>
+      </div>
 
       <div className="max-w-screen-xl mx-auto px-6 pb-20 space-y-16">
         {/* CO2 Banner */}
