@@ -86,3 +86,51 @@ main { animation: fadeIn 0.3s ease; }
   pointer-events: none;
   z-index: 1;
 }
+
+/* Number counter animation */
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.count-anim { animation: count-up 0.4s ease; }
+
+/* Gauge bar glow shimmer */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+.shimmer-bar {
+  background: linear-gradient(90deg, transparent 0%, rgba(0,212,255,0.3) 50%, transparent 100%);
+  background-size: 200% auto;
+  animation: shimmer 2s linear infinite;
+}
+
+/* Leaflet popup styling override */
+.leaflet-popup-content-wrapper {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+.leaflet-popup-content { margin: 0 !important; }
+.leaflet-popup-tip     { background: rgba(0,212,255,0.2) !important; }
+
+/* Glassmorphism card */
+.glass {
+  background: rgba(3, 8, 16, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 212, 255, 0.08);
+}
+
+/* Neon border pulse */
+@keyframes border-pulse {
+  0%, 100% { border-color: rgba(0,212,255,0.08); }
+  50%       { border-color: rgba(0,212,255,0.25); }
+}
+.border-pulse { animation: border-pulse 3s ease-in-out infinite; }
+
+/* Vertical data bar */
+.data-bar {
+  transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
