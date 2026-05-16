@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
 :root {
   --background: #060b18;
@@ -30,3 +31,58 @@ main { animation: fadeIn 0.3s ease; }
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #374151; }
+
+/* Override leaflet default z-index so it doesn't fight the navbar */
+.leaflet-pane { z-index: 1 !important; }
+.leaflet-top, .leaflet-bottom { z-index: 2 !important; }
+
+/* Ticker animation */
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.ticker-track { animation: ticker-scroll 60s linear infinite; }
+.ticker-track:hover { animation-play-state: paused; }
+
+/* Economics grid background */
+.eco-grid-bg {
+  background-image:
+    linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Neon glow utilities */
+.glow-cyan  { text-shadow: 0 0 8px rgba(0,212,255,0.7),  0 0 20px rgba(0,212,255,0.3); }
+.glow-green { text-shadow: 0 0 8px rgba(0,255,157,0.7),  0 0 20px rgba(0,255,157,0.3); }
+.glow-red   { text-shadow: 0 0 8px rgba(255,51,102,0.7), 0 0 20px rgba(255,51,102,0.3); }
+
+/* Pulse ring */
+@keyframes pulse-ring {
+  0%   { transform: scale(1);   opacity: 0.6; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+.pulse-ring::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse-ring 1.8s ease-out infinite;
+}
+
+/* Scanline overlay for Bloomberg feel */
+.scanlines::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.04) 2px,
+    rgba(0,0,0,0.04) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}

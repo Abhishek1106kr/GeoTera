@@ -6,13 +6,13 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { ArrowRight, MapPin, Clock, TrendingUp, Globe, Newspaper, Cloud, Users, Activity } from "lucide-react";
 
-const DeckGlobe = dynamic(() => import("@/components/DeckGlobe"), {
+const HomeGlobe = dynamic(() => import("@/components/HomeGlobe"), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full flex items-center justify-center">
       <div className="text-center">
-        <div className="w-16 h-16 rounded-full border-2 border-cyan-500/30 border-t-cyan-400 animate-spin mx-auto mb-4" />
-        <p className="text-gray-600 text-sm">Loading globe...</p>
+        <div className="w-16 h-16 rounded-full border-2 border-cyan-500/20 border-t-cyan-400 animate-spin mx-auto mb-4" />
+        <p className="text-gray-600 text-sm">Rendering globe…</p>
       </div>
     </div>
   ),
@@ -202,7 +202,7 @@ export default function Home() {
 
             {/* Globe canvas */}
             <div className="relative" style={{ height: "600px" }}>
-              <DeckGlobe
+              <HomeGlobe
                 earthquakes={data?.climate?.earthquakes ?? []}
                 weather={data?.climate?.weather ?? []}
               />
