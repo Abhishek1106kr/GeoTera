@@ -9,6 +9,10 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@deck.gl/core": "^9.3.2",
+    "@deck.gl/geo-layers": "^9.3.2",
+    "@deck.gl/layers": "^9.3.2",
+    "@deck.gl/react": "^9.3.2",
     "@types/leaflet": "^1.9.21",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.16.0",

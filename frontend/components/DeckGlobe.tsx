@@ -151,8 +151,9 @@ export default function DeckGlobe({ earthquakes, weather }: Props) {
     let mounted = true;
 
     async function init() {
-      const { DeckGL, TileLayer, BitmapLayer, ScatterplotLayer, ArcLayer } =
-        await import("deck.gl");
+      // @ts-ignore
+      const { DeckGL, TileLayer, BitmapLayer, ScatterplotLayer, ArcLayer } = await import("deck.gl");
+      // @ts-ignore
       const { _GlobeView } = await import("@deck.gl/core");
 
       if (!mounted || !containerRef.current) return;

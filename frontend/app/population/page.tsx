@@ -75,7 +75,7 @@ export default function PopulationPage() {
             World Population Map
           </h2>
           <div className="rounded-2xl overflow-hidden border border-white/10" style={{height:"400px"}}>
-            <PopulationMap population={pop} />
+            <PopulationMap population={pop ?? null} />
           </div>
         </section>
 
