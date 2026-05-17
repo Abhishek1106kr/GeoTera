@@ -4,8 +4,6 @@ import logging
 import os
 from contextlib import asynccontextmanager
 from typing import Set
-from pydantic import BaseModel
-import asyncio
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -19,6 +17,8 @@ from scrapers.climate import fetch_climate
 from scrapers.population import fetch_population
 from scrapers.about import send_subscription_email
 from scrapers.worldbank import fetch_worldbank
+from scrapers.market_history import fetch_market_history
+from scrapers.econ_calendar import get_econ_calendar
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("geoterra")
@@ -99,6 +99,16 @@ async def get_data():
 async def trigger_refresh():
     asyncio.create_task(scrape_all())
     return {"status": "refresh triggered"}
+
+
+@app.get("/api/history/{symbol}")
+async def get_history(symbol: str, period: str = "5d", interval: str = "1h"):
+    return await fetch_market_history(symbol, period, interval)
+
+
+@app.get("/api/econ-calendar")
+async def get_econ_calendar_endpoint():
+    return get_econ_calendar()
 
 class SubscribeRequest(BaseModel):
     email: str
