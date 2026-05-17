@@ -1,9 +1,19 @@
 @import "tailwindcss";
-/* @import "leaflet/dist/leaflet.css"; */
 
 :root {
-  --background: #060b18;
-  --foreground: #f0f0f0;
+  --background: #000000;
+  --foreground: #e8e8e8;
+  --t-bg: #000000;
+  --t-panel: #080808;
+  --t-border: #1a1a1a;
+  --t-orange: #ff6600;
+  --t-amber: #ffaa00;
+  --t-green: #00cc44;
+  --t-red: #ff4444;
+  --t-cyan: #00d4ff;
+  --t-dim: #555555;
+  --t-text: #cccccc;
+  --t-white: #e8e8e8;
 }
 
 @theme inline {
@@ -18,60 +28,150 @@ html { scroll-behavior: smooth; }
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: Consolas, Monaco, "Courier New", monospace;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Page transitions */
-main { animation: fadeIn 0.3s ease; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-/* Scrollbar */
+/* ── Scrollbar ─────────────────────────────────────────── */
 * { scrollbar-width: thin; scrollbar-color: #1f2937 transparent; }
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-thumb { background: #1f293744; border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: #374151; }
+.terminal-scroll::-webkit-scrollbar-thumb { background: #ff660044; }
 
-/* Override leaflet default z-index so it doesn't fight the navbar */
-.leaflet-pane { z-index: 1 !important; }
-.leaflet-top, .leaflet-bottom { z-index: 2 !important; }
-
-/* Ticker animation */
+/* ── Ticker animation ──────────────────────────────────── */
 @keyframes ticker-scroll {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
 }
-.ticker-track { animation: ticker-scroll 60s linear infinite; }
+.ticker-track { animation: ticker-scroll 90s linear infinite; }
 .ticker-track:hover { animation-play-state: paused; }
 
-/* Economics grid background */
-.eco-grid-bg {
-  background-image:
-    linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
+/* ── Pulse animations ──────────────────────────────────── */
+@keyframes data-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
 }
+.data-pulse { animation: data-pulse 2s ease-in-out infinite; }
 
-/* Neon glow utilities */
-.glow-cyan  { text-shadow: 0 0 8px rgba(0,212,255,0.7),  0 0 20px rgba(0,212,255,0.3); }
-.glow-green { text-shadow: 0 0 8px rgba(0,255,157,0.7),  0 0 20px rgba(0,255,157,0.3); }
-.glow-red   { text-shadow: 0 0 8px rgba(255,51,102,0.7), 0 0 20px rgba(255,51,102,0.3); }
-
-/* Pulse ring */
 @keyframes pulse-ring {
   0%   { transform: scale(1);   opacity: 0.6; }
   100% { transform: scale(2.2); opacity: 0; }
 }
+.pulse-ring { position: relative; }
 .pulse-ring::after {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: -2px;
   border-radius: 50%;
-  background: currentColor;
-  animation: pulse-ring 1.8s ease-out infinite;
+  border: 1px solid currentColor;
+  animation: pulse-ring 2s ease-out infinite;
 }
 
-/* Scanline overlay for Bloomberg feel */
+@keyframes live-dot {
+  0%, 100% { box-shadow: 0 0 0 0 currentColor; }
+  50%      { box-shadow: 0 0 0 4px transparent; }
+}
+.live-dot { animation: live-dot 2s ease infinite; }
+
+/* ── View transition ───────────────────────────────────── */
+@keyframes view-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.view-enter { animation: view-enter 0.25s ease-out; }
+
+/* ── Radar sweep ───────────────────────────────────────── */
+@keyframes radar-sweep {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── Gauge fill ────────────────────────────────────────── */
+@keyframes gauge-fill {
+  from { width: 0%; }
+}
+.gauge-fill { animation: gauge-fill 1s ease-out; }
+
+/* ── Shimmer ───────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+.shimmer-bar {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,102,0,0.15) 50%, transparent 100%);
+  background-size: 200% auto;
+  animation: shimmer 3s linear infinite;
+}
+
+/* ── Glow utilities ────────────────────────────────────── */
+.glow-orange { text-shadow: 0 0 6px rgba(255,102,0,0.6), 0 0 15px rgba(255,102,0,0.2); }
+.glow-green  { text-shadow: 0 0 6px rgba(0,204,68,0.6),  0 0 15px rgba(0,204,68,0.2); }
+.glow-red    { text-shadow: 0 0 6px rgba(255,68,68,0.6),  0 0 15px rgba(255,68,68,0.2); }
+.glow-cyan   { text-shadow: 0 0 6px rgba(0,212,255,0.6),  0 0 15px rgba(0,212,255,0.2); }
+
+/* ── Terminal cursor ───────────────────────────────────── */
+@keyframes terminal-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.terminal-cursor { animation: terminal-blink 1s step-end infinite; color: #ff6600; }
+
+/* ── Panel glass ───────────────────────────────────────── */
+.glass-panel {
+  background: #080808;
+  border: 1px solid #1a1a1a;
+  position: relative;
+}
+.glass-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #ff660022, transparent);
+}
+
+/* ── Nav rail ──────────────────────────────────────────── */
+.nav-rail-item {
+  position: relative;
+  transition: all 0.15s ease;
+}
+.nav-rail-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 25%;
+  bottom: 25%;
+  width: 2px;
+  background: transparent;
+  border-radius: 0 2px 2px 0;
+  transition: background 0.15s ease;
+}
+.nav-rail-item:hover { background: #ff660008; }
+.nav-rail-item.active { background: #ff660012; }
+.nav-rail-item.active::before { background: #ff6600; }
+
+/* ── Row hover ─────────────────────────────────────────── */
+.mkt-row { transition: background 0.1s; }
+.mkt-row:hover { background: rgba(255, 102, 0, 0.04) !important; }
+
+/* ── Counter animation ─────────────────────────────────── */
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.count-anim { animation: count-up 0.3s ease; }
+
+/* ── Border pulse ──────────────────────────────────────── */
+@keyframes border-pulse {
+  0%, 100% { border-color: #1a1a1a; }
+  50%      { border-color: #ff660033; }
+}
+.border-pulse { animation: border-pulse 3s ease-in-out infinite; }
+
+/* ── Scanlines ─────────────────────────────────────────── */
 .scanlines::before {
   content: "";
   position: absolute;
@@ -80,9 +180,22 @@ main { animation: fadeIn 0.3s ease; }
     0deg,
     transparent,
     transparent 2px,
-    rgba(0,0,0,0.04) 2px,
-    rgba(0,0,0,0.04) 4px
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
   );
   pointer-events: none;
   z-index: 1;
 }
+
+/* ── Header gradient line ──────────────────────────────── */
+.bb-header-line {
+  background: linear-gradient(90deg, transparent, #ff6600, #ffaa00, #ff6600, transparent);
+  height: 1px;
+}
+
+/* ── Leaflet overrides ─────────────────────────────────── */
+.leaflet-pane { z-index: 1 !important; }
+.leaflet-top, .leaflet-bottom { z-index: 2 !important; }
+.leaflet-popup-content-wrapper { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
+.leaflet-popup-content { margin: 0 !important; }
+.leaflet-popup-tip { background: rgba(0,212,255,0.2) !important; }

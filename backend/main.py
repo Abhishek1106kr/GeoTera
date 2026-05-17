@@ -4,8 +4,6 @@ import logging
 import os
 from contextlib import asynccontextmanager
 from typing import Set
-from pydantic import BaseModel
-import asyncio
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -19,6 +17,8 @@ from scrapers.climate import fetch_climate
 from scrapers.population import fetch_population
 from scrapers.about import send_subscription_email
 from scrapers.worldbank import fetch_worldbank
+from scrapers.market_history import fetch_market_history
+from scrapers.econ_calendar import get_econ_calendar
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("geoterra")
@@ -100,6 +100,16 @@ async def trigger_refresh():
     asyncio.create_task(scrape_all())
     return {"status": "refresh triggered"}
 
+
+@app.get("/api/history/{symbol}")
+async def get_history(symbol: str, period: str = "5d", interval: str = "1h"):
+    return await fetch_market_history(symbol, period, interval)
+
+
+@app.get("/api/econ-calendar")
+async def get_econ_calendar_endpoint():
+    return get_econ_calendar()
+
 class SubscribeRequest(BaseModel):
     email: str
 
@@ -119,6 +129,7 @@ async def subscribe_user(req: SubscribeRequest):
 # ── AI endpoint ───────────────────────────────────────────────────────────────
 class AIQuery(BaseModel):
     message: str
+    context: str | None = None
 
 
 @app.post("/api/ai/query")
@@ -127,30 +138,53 @@ async def ai_query(body: AIQuery):
         return {"response": "AI assistant is disabled. Set ANTHROPIC_API_KEY in your environment to enable it.", "enabled": False}
 
     eco = cache._store.get("economy", {})
-    news_titles = [n["title"] for n in cache._store.get("news", [])[:8]]
+    news_titles = [n["title"] for n in cache._store.get("news", [])[:12]]
     worldbank = cache._store.get("worldbank", {})
+    macro = eco.get("macro", {})
 
-    context = f"""LIVE MARKET DATA:
-Indices: {json.dumps([{k: v for k, v in i.items() if k in ('name','price','change_pct')} for i in eco.get('indices', [])], indent=2)}
-Crypto:  {json.dumps([{k: v for k, v in i.items() if k in ('name','price','change_pct')} for i in eco.get('crypto', [])], indent=2)}
-Commodities: {json.dumps([{k: v for k, v in i.items() if k in ('name','price','change_pct')} for i in eco.get('commodities', [])], indent=2)}
-Forex (vs USD): {json.dumps(eco.get('forex', {}), indent=2)}
+    def _fmt(items: list, keys: tuple = ("name", "price", "change_pct")) -> str:
+        return json.dumps([{k: v for k, v in i.items() if k in keys} for i in items], indent=2)
+
+    wb_sample = {
+        code: worldbank.get("countries", {}).get(code, {})
+        for code in ("US", "CN", "IN", "DE", "BR", "JP")
+    }
+
+    client_ctx = f"\n\nUser dashboard context: {body.context}" if body.context else ""
+
+    context = f"""=== LIVE GEOTERRA MARKET DATA ===
+INDICES:     {_fmt(eco.get('indices', []))}
+CRYPTO:      {_fmt(eco.get('crypto', []))}
+COMMODITIES: {_fmt(eco.get('commodities', []))}
+S&P SECTORS: {_fmt(eco.get('sectors', []), ('name', 'change_pct'))}
+
+MACRO INDICATORS:
+  VIX (Volatility):   {macro.get('vix')} {"(HIGH FEAR)" if (macro.get('vix') or 0) > 30 else ""}
+  DXY (Dollar Index): {macro.get('dxy')}
+  10Y Treasury Yield: {macro.get('treasury_10y')}%
+  2Y Treasury Yield:  {macro.get('treasury_2y')}%
+  Yield Curve Status: {"INVERTED (recession signal!)" if (macro.get('treasury_2y') or 0) > (macro.get('treasury_10y') or 999) else "Normal"}
+  Fear & Greed Index: {macro.get('fear_greed')}/100
+
+FOREX (1 USD =): {json.dumps(eco.get('forex', {}), indent=2)}
 
 RECENT HEADLINES: {json.dumps(news_titles, indent=2)}
 
-WORLD BANK SAMPLE (US): {json.dumps(worldbank.get('countries', {}).get('US', {}), indent=2)}
+WORLD BANK DATA (key economies):
+{json.dumps(wb_sample, indent=2)}{client_ctx}
 """
 
     msg = await _anthropic.messages.create(
         model="claude-sonnet-4-6",
-        max_tokens=900,
+        max_tokens=1024,
         system=(
-            "You are GeoTera's AI Economic Intelligence System — a sharp, data-driven economist "
-            "with access to live global market data. Answer concisely in 3–6 sentences. "
-            "Lead with the most important insight. Use numbers from the data when relevant. "
-            "Never say you lack real-time access — you have it above."
+            "You are GeoTera's AI Economic Intelligence System — a sharp, data-driven macro economist "
+            "with live access to global markets, treasuries, and World Bank data. "
+            "Lead with the single most important insight. Use specific numbers from the live data. "
+            "Be concise (4–7 sentences max). Use bullet points for comparisons or lists. "
+            "Never say you lack real-time access — the data above is live."
         ),
-        messages=[{"role": "user", "content": f"Live context:\n{context}\n\nQuestion: {body.message}"}],
+        messages=[{"role": "user", "content": f"Live data:\n{context}\n\nQuestion: {body.message}"}],
     )
     return {"response": msg.content[0].text, "enabled": True}
 

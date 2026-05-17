@@ -1,118 +1,190 @@
 "use client";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
-import TickerBar from "@/components/economics/TickerBar";
-import SignalBar from "@/components/economics/SignalBar";
-import MarketHeatmap from "@/components/economics/MarketHeatmap";
-import EventFeed from "@/components/economics/EventFeed";
-import ChartPanel from "@/components/economics/ChartPanel";
-import PredictivePanel from "@/components/economics/PredictivePanel";
-import AIAssistant from "@/components/economics/AIAssistant";
+import { useGeoTera } from "@/lib/GeoTeraContext";
+import IntelligenceBar from "@/components/terminal/IntelligenceBar";
+import NavRail, { type ViewKey } from "@/components/terminal/NavRail";
+import AITerminal from "@/components/terminal/AITerminal";
+import OverviewView from "@/components/terminal/views/OverviewView";
+import MarketsView from "@/components/terminal/views/MarketsView";
+import MacroView from "@/components/terminal/views/MacroView";
+import SectorsView from "@/components/terminal/views/SectorsView";
+import CommoditiesView from "@/components/terminal/views/CommoditiesView";
+import ForexView from "@/components/terminal/views/ForexView";
+import RiskRadarView from "@/components/terminal/views/RiskRadarView";
+import ForecastView from "@/components/terminal/views/ForecastView";
+import ExplorerView from "@/components/terminal/views/ExplorerView";
+import WatchlistView from "@/components/terminal/views/WatchlistView";
 
-const EconomicsMap = dynamic(() => import("@/components/economics/EconomicsMap"), {
-  ssr: false,
-  loading: () => <div className="h-full flex items-center justify-center text-gray-700 text-sm animate-pulse">Loading map…</div>,
-});
+const T = {
+  bg: "#000000", panel: "#080808", border: "#1a1a1a",
+  orange: "#ff6600", amber: "#ffaa00", green: "#00cc44",
+  red: "#ff4444", dim: "#555555", text: "#cccccc", white: "#e8e8e8",
+};
 
-function Panel({
-  children,
-  className = "",
-  noPad = false,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  noPad?: boolean;
-}) {
-  return (
-    <div
-      className={`relative bg-[#030810]/80 border border-[#00d4ff]/8 rounded-2xl overflow-hidden ${noPad ? "" : "p-4"} ${className}`}
-      style={{ boxShadow: "0 0 0 1px rgba(0,212,255,0.04), inset 0 1px 0 rgba(0,212,255,0.05)" }}
-    >
-      {children}
-    </div>
-  );
+const VIEW_LABELS: Record<ViewKey, string> = {
+  overview: "OVERVIEW",
+  markets: "FINANCIAL MARKETS",
+  macro: "MACRO INDICATORS",
+  sectors: "SECTOR INTELLIGENCE",
+  commodities: "COMMODITIES & ENERGY",
+  forex: "FOREIGN EXCHANGE",
+  risk: "RISK RADAR",
+  forecast: "AI FORECAST & CALENDAR",
+  explorer: "COUNTRY EXPLORER",
+  watchlist: "WATCHLIST",
+};
+
+function ViewRenderer({ view }: { view: ViewKey }) {
+  switch (view) {
+    case "overview":    return <OverviewView />;
+    case "markets":     return <MarketsView />;
+    case "macro":       return <MacroView />;
+    case "sectors":     return <SectorsView />;
+    case "commodities": return <CommoditiesView />;
+    case "forex":       return <ForexView />;
+    case "risk":        return <RiskRadarView />;
+    case "forecast":    return <ForecastView />;
+    case "explorer":    return <ExplorerView />;
+    case "watchlist":   return <WatchlistView />;
+    default:            return <OverviewView />;
+  }
 }
 
 export default function EconomicsPage() {
+  const { data } = useGeoTera();
+  const [activeView, setActiveView] = useState<ViewKey>("overview");
+  const [navCollapsed, setNavCollapsed] = useState(false);
+  const [aiOpen, setAiOpen] = useState(true);
+
+  // Keyboard shortcuts: 1-0 switch views, Escape toggles AI
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      // Don't capture if user is typing in an input
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+
+      const keys: Record<string, ViewKey> = {
+        "1": "overview", "2": "markets", "3": "macro", "4": "sectors",
+        "5": "commodities", "6": "forex", "7": "risk", "8": "forecast",
+        "9": "explorer", "0": "watchlist",
+      };
+
+      if (keys[e.key]) {
+        e.preventDefault();
+        setActiveView(keys[e.key]);
+      } else if (e.key === "Escape") {
+        setAiOpen(prev => !prev);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-[#03060d] eco-grid-bg pt-16 flex flex-col">
-      {/* ── Live Ticker ── */}
-      <TickerBar />
+    <div style={{
+      height: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      background: T.bg,
+      overflow: "hidden",
+      paddingTop: 64, // for the global nav
+    }}>
+      {/* ── Intelligence Bar (top ribbon) ─────────────────── */}
+      <IntelligenceBar />
 
-      {/* ── Signal Bar ── */}
-      <SignalBar />
-
-      {/* ── Page title ── */}
-      <div className="px-6 pt-6 pb-3 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-3">
-            <span className="w-2 h-6 rounded-full bg-gradient-to-b from-[#00d4ff] to-violet-500" />
-            Economic Intelligence
-          </h1>
-          <p className="text-xs text-gray-600 mt-0.5 pl-5">Real-time global economic monitoring · AI-powered insights · Live World Bank data</p>
-          
-          {/* Quick Navigation Buttons */}
-          <div className="flex flex-wrap items-center gap-3 mt-4 pl-5">
-            <Link href="/finance" className="px-5 py-1.5 bg-white/[0.05] hover:bg-emerald-500/20 border border-white/10 hover:border-emerald-500/50 rounded-lg text-xs font-medium text-gray-300 hover:text-emerald-400 transition-all">
-              Finance
-            </Link>
-            <Link href="/corporate" className="px-5 py-1.5 bg-white/[0.05] hover:bg-violet-500/20 border border-white/10 hover:border-violet-500/50 rounded-lg text-xs font-medium text-gray-300 hover:text-violet-400 transition-all">
-              Corporate
-            </Link>
-            <Link href="/about" className="px-5 py-1.5 bg-white/[0.05] hover:bg-[#00d4ff]/20 border border-white/10 hover:border-[#00d4ff]/50 rounded-lg text-xs font-medium text-gray-300 hover:text-[#00d4ff] transition-all">
-              About
-            </Link>
-          </div>
-        </div>
-        <div className="hidden md:flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#00ff9d] animate-pulse" />
-          <span className="text-[10px] text-gray-600 uppercase tracking-widest">Live Feed</span>
-        </div>
+      {/* ── Nav links bar ─────────────────────────────────── */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 2,
+        padding: "2px 6px", borderBottom: `1px solid ${T.border}`,
+        background: "#030303", flexShrink: 0, fontSize: 8,
+      }}>
+        {[
+          { href: "/", label: "HOME" },
+          { href: "/news", label: "NEWS" },
+          { href: "/climate", label: "CLIMATE" },
+          { href: "/population", label: "POPULATION" },
+          { href: "/about", label: "ABOUT" },
+        ].map(link => (
+          <Link
+            key={link.href} href={link.href}
+            style={{
+              color: T.dim, padding: "1px 6px", border: `1px solid ${T.border}`,
+              textDecoration: "none", fontWeight: 700, letterSpacing: 1,
+            }}
+          >{link.label}</Link>
+        ))}
+        <span style={{ color: T.border, margin: "0 4px" }}>│</span>
+        <span style={{ color: T.orange, fontWeight: 700, letterSpacing: 1 }}>ECONOMICS TERMINAL</span>
+        <span style={{ color: T.dim, marginLeft: 6 }}>
+          {VIEW_LABELS[activeView]}
+        </span>
+        <div style={{ flex: 1 }} />
+        <button
+          onClick={() => setAiOpen(prev => !prev)}
+          style={{
+            background: aiOpen ? `${T.orange}15` : "transparent",
+            border: `1px solid ${aiOpen ? T.orange : T.border}`,
+            color: aiOpen ? T.orange : T.dim,
+            fontSize: 8, fontWeight: 700, cursor: "pointer", padding: "1px 6px",
+          }}
+        >
+          AI {aiOpen ? "ON" : "OFF"} [Esc]
+        </button>
       </div>
 
-      <div className="flex-1 px-4 pb-6 flex flex-col gap-3">
-        {/* ── Row 1: Map + AI ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3" style={{ minHeight: "380px" }}>
-          <Panel className="lg:col-span-2" noPad>
-            {/* Map header */}
-            <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[#00d4ff]/8">
-              <span className="text-[10px] font-black text-[#00d4ff] uppercase tracking-widest">Global Economic Map</span>
-              <div className="ml-auto flex items-center gap-4 text-[9px] text-gray-600">
-                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#00ff9d]" />Growth &gt;3%</span>
-                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-500" />1–3%</span>
-                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-500" />0–1%</span>
-                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#ff3366]" />Negative</span>
-              </div>
-            </div>
-            <div style={{ height: "340px" }}>
-              <EconomicsMap />
-            </div>
-          </Panel>
+      {/* ── Main content area ─────────────────────────────── */}
+      <div style={{ flex: 1, display: "flex", overflow: "hidden", minHeight: 0 }}>
+        {/* Nav Rail */}
+        <NavRail
+          active={activeView}
+          onChange={setActiveView}
+          collapsed={navCollapsed}
+          onToggle={() => setNavCollapsed(prev => !prev)}
+        />
 
-          <Panel className="flex flex-col" noPad>
-            <div style={{ height: "380px" }}>
-              <AIAssistant />
-            </div>
-          </Panel>
+        {/* Center: Dynamic View Canvas */}
+        <div style={{
+          flex: 1, overflow: "hidden",
+          padding: 1, display: "flex", flexDirection: "column",
+          minWidth: 0,
+        }}>
+          <ViewRenderer view={activeView} />
         </div>
 
-        {/* ── Row 2: Heatmap + Events + Charts ── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3" style={{ minHeight: "320px" }}>
-          <Panel>
-            <MarketHeatmap />
-          </Panel>
-          <Panel>
-            <EventFeed />
-          </Panel>
-          <Panel>
-            <ChartPanel />
-          </Panel>
-        </div>
+        {/* Right: AI Terminal (collapsible) */}
+        {aiOpen && (
+          <div style={{
+            width: 320,
+            borderLeft: `1px solid ${T.border}`,
+            background: T.bg,
+            flexShrink: 0,
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+          }}>
+            <AITerminal />
+          </div>
+        )}
+      </div>
 
-        {/* ── Row 3: Predictive Analytics ── */}
-        <Panel>
-          <PredictivePanel />
-        </Panel>
+      {/* ── Status bar ────────────────────────────────────── */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 12,
+        padding: "2px 8px", borderTop: `1px solid ${T.border}`,
+        background: "#030303", flexShrink: 0, fontSize: 8, color: T.dim,
+      }}>
+        <span>SRC: yfinance · World Bank · Frankfurter · Reuters/AP RSS</span>
+        <span style={{ color: T.border }}>│</span>
+        <span>UPD: {data?.last_updated ? new Date(data.last_updated).toLocaleTimeString() : "—"}</span>
+        <span style={{ color: T.border }}>│</span>
+        <span>VIEW: {VIEW_LABELS[activeView]}</span>
+        <span style={{ color: T.border }}>│</span>
+        <span>KEYS: 1-0 navigate · Esc toggle AI</span>
+        <span style={{ flex: 1 }} />
+        <span style={{ color: T.red, fontWeight: 700 }}>NOT FINANCIAL ADVICE</span>
+        <span style={{ color: T.border }}>│</span>
+        <span>GeoTera Economic Intelligence Terminal v2.0</span>
       </div>
     </div>
   );

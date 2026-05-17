@@ -3,11 +3,22 @@ import { useEffect, useRef, useState, useCallback } from "react";
 
 export type ConnectionStatus = "connecting" | "connected" | "disconnected";
 
+export interface MacroData {
+  vix: number | null;
+  dxy: number | null;
+  treasury_10y: number | null;
+  treasury_2y: number | null;
+  treasury_5y: number | null;
+  treasury_30y: number | null;
+  fear_greed: number | null;
+}
+
 export interface GeoTeraData {
   news: NewsItem[];
   economy: EconomyData;
   climate: ClimateData;
   population: PopulationData;
+  worldbank: WorldBankData;
   last_updated: string | null;
 }
 
@@ -24,7 +35,9 @@ export interface EconomyData {
   indices: MarketItem[];
   crypto: MarketItem[];
   commodities: MarketItem[];
+  sectors: MarketItem[];
   forex: Record<string, number>;
+  macro: MacroData;
   timestamp: string;
 }
 
@@ -76,6 +89,17 @@ export interface CountryItem {
   capital: string;
   flag: string;
   area_km2: number;
+}
+
+export interface WorldBankData {
+  countries: Record<string, {
+    gdp_growth?: number;
+    inflation?: number;
+    unemployment?: number;
+    debt_to_gdp?: number;
+    gdp_per_capita?: number;
+  }>;
+  timestamp: string;
 }
 
 const WS_URL = "ws://localhost:8000/ws";
